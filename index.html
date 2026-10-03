@@ -34,14 +34,15 @@ canvas:focus-visible{box-shadow:0 0 0 2px var(--amber)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;font-size:13px;color:var(--muted);letter-spacing:.02em}
 .legend span{display:inline-flex;gap:6px;align-items:center}
 kbd{font-family:var(--font-ui);font-size:12px;font-weight:700;border:1px solid #3b2656;border-bottom-width:2px;border-radius:4px;padding:1px 6px;color:var(--ink);background:#150c22}
-.touch{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;padding:10px;pointer-events:none}
+.touch{position:absolute;inset:0;pointer-events:none}
+.touch .row{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;padding:10px}
 .touch .grp{display:flex;gap:10px;align-items:flex-end}
 .touch button{pointer-events:auto;width:clamp(48px,11vw,72px);height:clamp(48px,11vw,72px);border-radius:50%;
   border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:var(--ink);
   font-family:var(--font-display);font-size:clamp(10px,2.4vw,14px);touch-action:none;padding:0}
 .touch button.on{background:rgba(255,46,136,.45);border-color:var(--neon)}
-.touch .top{position:absolute;top:8px;right:8px;display:flex;gap:8px}
-.touch .top button{width:40px;height:40px;font-size:12px}
+.touch .top{position:absolute;top:1.2%;left:61%;display:flex;gap:8px}
+.touch .top button{width:clamp(28px,4.2vw,40px);height:clamp(28px,4.2vw,40px);font-size:12px}
 @media (pointer:coarse){ .legend{display:none} }
 </style>
 </head>
@@ -49,6 +50,7 @@ kbd{font-family:var(--font-ui);font-size:12px;font-weight:700;border:1px solid #
 <div class="stage" id="stage">
   <canvas id="game" width="960" height="540" tabindex="0" aria-label="ProRock Spielfläche"></canvas>
   <div class="touch" id="touch" hidden>
+    <div class="row">
     <div class="grp">
       <button type="button" id="t-left" data-act="left" aria-label="Links">◀</button>
       <button type="button" id="t-right" data-act="right" aria-label="Rechts">▶</button>
@@ -56,6 +58,7 @@ kbd{font-family:var(--font-ui);font-size:12px;font-weight:700;border:1px solid #
     <div class="grp">
       <button type="button" id="t-fire" data-act="fire" aria-label="Singen">SING</button>
       <button type="button" id="t-jump" data-act="jump" aria-label="Springen">JUMP</button>
+    </div>
     </div>
     <div class="top">
       <button type="button" id="t-pause" data-cmd="pause" aria-label="Pause">II</button>
