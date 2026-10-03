@@ -2,7 +2,9 @@
 
 Ein Jump-'n'-Run im Konzertsaal (Browser, eine einzige HTML-Datei, keine Abhängigkeiten).
 
-Öffne `index.html` im Browser.
+**Jetzt spielen:** https://sidler.github.io/prorock/
+
+Oder lokal: `index.html` im Browser öffnen.
 
 - **Held:** ein Sänger, der Mikrofone sammelt (alle 50 Mikros = Extraleben, goldenes Mikro = Herz).
 - **Gegner:** Hi-Hats, die wie Münder auf- und zuschnappen. Nur draufspringen, wenn sie zu sind – oder mit Noten wegsingen.
