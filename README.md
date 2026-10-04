@@ -13,4 +13,4 @@ Oder lokal: `index.html` im Browser öffnen.
 - **Bosse:** am Ende jedes Levels Schlagzeuger, Bassist oder Gitarrist (im Wechsel).
 - **Schwierigkeit:** steigt mit jedem Level. Jedes 10. Level ist ein sehr schweres Mega-Level mit der ganzen Band als Boss.
 
-Steuerung: Pfeiltasten laufen, Leertaste springen, X singen, P Pause, M Ton. Auf Touch-Geräten erscheinen Bildschirmtasten.
+Steuerung: Pfeiltasten laufen, Leertaste springen, X singen, P Pause, M Ton, F Vollbild (oder der Knopf oben im Spielfeld). Auf Touch-Geräten erscheinen Bildschirmtasten.

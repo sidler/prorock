@@ -28,6 +28,16 @@ body{
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
 }
 .stage{position:relative;width:min(100%, calc((100dvh - 80px) * 16 / 9));aspect-ratio:16/9;max-width:100%}
+.screen{position:relative;width:100%;height:100%}
+.stage:fullscreen{width:100%;height:100%;max-width:none;aspect-ratio:auto;background:#000;display:flex;align-items:center;justify-content:center}
+.stage:-webkit-full-screen{width:100%;height:100%;max-width:none;aspect-ratio:auto;background:#000;display:flex;align-items:center;justify-content:center}
+.stage.pseudo-fs{position:fixed;inset:0;z-index:10;width:auto;height:auto;max-width:none;aspect-ratio:auto;background:#000;display:flex;align-items:center;justify-content:center;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.stage:fullscreen .screen{width:min(100vw, 100vh * 16 / 9);height:auto;aspect-ratio:16/9}
+.stage:-webkit-full-screen .screen{width:min(100vw, 100vh * 16 / 9);height:auto;aspect-ratio:16/9}
+.stage.pseudo-fs .screen{width:min(100%, (100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) * 16 / 9);height:auto;aspect-ratio:16/9}
+.stage:fullscreen canvas{border-radius:0;box-shadow:none}
+.stage.pseudo-fs canvas{border-radius:0;box-shadow:none}
 canvas{display:block;width:100%;height:100%;border-radius:6px;background:var(--hall-2);
   box-shadow:0 0 0 1px #2a1840, 0 24px 70px -24px rgba(255,46,136,.45);touch-action:none;outline:none}
 canvas:focus-visible{box-shadow:0 0 0 2px var(--amber)}
@@ -41,13 +51,18 @@ kbd{font-family:var(--font-ui);font-size:12px;font-weight:700;border:1px solid #
   border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:var(--ink);
   font-family:var(--font-display);font-size:clamp(10px,2.4vw,14px);touch-action:none;padding:0}
 .touch button.on{background:rgba(255,46,136,.45);border-color:var(--neon)}
-.touch .top{position:absolute;top:1.2%;left:61%;display:flex;gap:8px}
-.touch .top button{width:clamp(28px,4.2vw,40px);height:clamp(28px,4.2vw,40px);font-size:12px}
+.ctrl{position:absolute;top:1.6%;left:61%;display:flex;gap:8px}
+.ctrl button{width:clamp(28px,3.6vw,38px);height:clamp(28px,3.6vw,38px);border-radius:50%;padding:0;
+  display:grid;place-items:center;border:2px solid rgba(255,255,255,.3);background:rgba(10,5,18,.55);color:var(--ink);
+  font-family:var(--font-display);font-size:12px;cursor:pointer;touch-action:manipulation}
+.ctrl button:hover{border-color:var(--neon)}
+.ctrl svg{width:55%;height:55%;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 @media (pointer:coarse){ .legend{display:none} }
 </style>
 </head>
 <body>
 <div class="stage" id="stage">
+  <div class="screen">
   <canvas id="game" width="960" height="540" tabindex="0" aria-label="ProRock Spielfläche"></canvas>
   <div class="touch" id="touch" hidden>
     <div class="row">
@@ -60,10 +75,12 @@ kbd{font-family:var(--font-ui);font-size:12px;font-weight:700;border:1px solid #
       <button type="button" id="t-jump" data-act="jump" aria-label="Springen">JUMP</button>
     </div>
     </div>
-    <div class="top">
-      <button type="button" id="t-pause" data-cmd="pause" aria-label="Pause">II</button>
-      <button type="button" id="t-mute" data-cmd="mute" aria-label="Ton an oder aus">♪</button>
-    </div>
+  </div>
+  <div class="ctrl">
+    <button type="button" id="t-pause" data-cmd="pause" aria-label="Pause" title="Pause (P)">II</button>
+    <button type="button" id="t-mute" data-cmd="mute" aria-label="Ton an oder aus" title="Ton (M)">♪</button>
+    <button type="button" id="t-fs" data-cmd="fullscreen" aria-label="Vollbild" title="Vollbild (F)"></button>
+  </div>
   </div>
 </div>
 <div class="legend" aria-label="Steuerung">
@@ -72,6 +89,7 @@ kbd{font-family:var(--font-ui);font-size:12px;font-weight:700;border:1px solid #
   <span><kbd>X</kbd> singen (Noten schießen)</span>
   <span><kbd>P</kbd> Pause</span>
   <span><kbd>M</kbd> Ton</span>
+  <span><kbd>F</kbd> Vollbild</span>
 </div>
 <noscript>ProRock braucht JavaScript.</noscript>
 <script>
@@ -226,6 +244,7 @@ addEventListener('keydown', e => {
   if (e.repeat) return;
   if (e.code === 'KeyP' || e.code === 'Escape') togglePause();
   else if (e.code === 'KeyM') toggleMute();
+  else if (e.code === 'KeyF') toggleFullscreen();
   else if (e.code === 'Enter' || a === 'jump') advance();
 });
 addEventListener('keyup', e => { const a = KEYMAP[e.code]; if (a) input[a] = false; });
@@ -249,9 +268,41 @@ touchEl.querySelectorAll('button[data-act]').forEach(b => {
   b.addEventListener('lostpointercapture', up);
   b.addEventListener('contextmenu', e => e.preventDefault());
 });
-touchEl.querySelectorAll('button[data-cmd]').forEach(b => {
-  b.addEventListener('click', () => { initAudio(); if (b.dataset.cmd === 'pause') togglePause(); else toggleMute(); });
+document.querySelectorAll('.ctrl button[data-cmd]').forEach(b => {
+  b.addEventListener('click', () => {
+    initAudio();
+    const c = b.dataset.cmd;
+    if (c === 'pause') togglePause(); else if (c === 'mute') toggleMute(); else toggleFullscreen();
+    b.blur(); cv.focus();
+  });
 });
+
+/* Vollbild: echte Fullscreen-API, sonst (z. B. iPhone) Pseudo-Vollbild per CSS */
+const stageEl = document.getElementById('stage'), fsBtn = document.getElementById('t-fs');
+const FS_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+const FS_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
+const nativeFs = () => document.fullscreenElement || document.webkitFullscreenElement;
+const isFs = () => !!nativeFs() || stageEl.classList.contains('pseudo-fs');
+function updateFsBtn() {
+  const on = isFs();
+  fsBtn.innerHTML = on ? FS_OFF : FS_ON;
+  fsBtn.setAttribute('aria-label', on ? 'Vollbild beenden' : 'Vollbild');
+  fsBtn.title = on ? 'Vollbild beenden (F)' : 'Vollbild (F)';
+}
+function pseudoFs(on) { stageEl.classList.toggle('pseudo-fs', on); updateFsBtn(); }
+function toggleFullscreen() {
+  if (nativeFs()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+  if (stageEl.classList.contains('pseudo-fs')) { pseudoFs(false); return; }
+  const req = stageEl.requestFullscreen || stageEl.webkitRequestFullscreen;
+  if (!req) { pseudoFs(true); return; }
+  try {
+    const p = req.call(stageEl, { navigationUI: 'hide' });
+    if (p && p.then) p.then(() => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {}); } catch (e) { /* egal */ } }, () => pseudoFs(true));
+  } catch (e) { pseudoFs(true); }
+}
+document.addEventListener('fullscreenchange', updateFsBtn);
+document.addEventListener('webkitfullscreenchange', updateFsBtn);
+updateFsBtn();
 
 /* ======================= Spielzustand ======================= */
 const G = {
@@ -1517,7 +1568,7 @@ function drawTitle() {
   panel(W / 2 - 300, 262, 600, 150, '#5a3b6e');
   const rows = isTouch()
     ? [['◀ ▶', 'laufen'], ['JUMP', 'springen, auf Fans landen = Hochwurf'], ['SING', 'Noten schießen (kostet Stimme)'], ['II', 'Pause']]
-    : [['← →', 'laufen'], ['Leertaste', 'springen, auf Fans landen = Hochwurf'], ['X', 'singen: Noten schießen (kostet Stimme)'], ['P / M', 'Pause / Ton']];
+    : [['← →', 'laufen'], ['Leertaste', 'springen, auf Fans landen = Hochwurf'], ['X', 'singen: Noten schießen (kostet Stimme)'], ['P / M / F', 'Pause / Ton / Vollbild']];
   rows.forEach((r, i) => { text(r[0], W / 2 - 150, 296 + i * 30, 16, C.amber, 'right', FONT_D, '400'); text(r[1], W / 2 - 130, 296 + i * 30, 16, C.ink, 'left', FONT_U, '500'); });
   text('Hi-Hats nur stampfen, wenn ihr Maul zu ist!', W / 2, 438, 15, C.cyan, 'center', FONT_U, '700');
   if (blink()) text(isTouch() ? 'Tippen zum Starten' : 'Leertaste drücken zum Starten', W / 2, 482, 22, C.ink, 'center', FONT_D, '400');
